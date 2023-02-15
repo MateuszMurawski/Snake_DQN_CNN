@@ -1,6 +1,5 @@
 import random
-import time
-
+from typing import List, Optional
 import pygame
 from matplotlib import pyplot as plt
 
@@ -9,66 +8,74 @@ import gameInfo
 
 
 class Game:
-    def __init__(self, __agent: agent.Agent, maxNumberGame):
-        self.__backgroundColor = pygame.Color(0, 0, 0)
-        self.__scoreColor = pygame.Color(0, 255, 255)
-        self.__appleColor = pygame.Color(255, 0, 0)
-        self.__snakeBodyColor = pygame.Color(85, 255, 0)
-        self.__snakeHeadColor = pygame.Color(170, 0, 200)
+    def __init__(self, __agent: agent.Agent, maxNumberGame: int) -> None:
+        self.__backgroundColor: pygame.Color = pygame.Color(0, 0, 0)
+        self.__scoreColor: pygame.Color = pygame.Color(0, 255, 255)
+        self.__appleColor: pygame.Color = pygame.Color(255, 0, 0)
+        self.__snakeBodyColor: pygame.Color = pygame.Color(85, 255, 0)
+        self.__snakeHeadColor: pygame.Color = pygame.Color(170, 0, 200)
 
-        self.__agent = __agent
-        self.__gameInfo = gameInfo.GameInfo()
-        self.__snakeSpeed = 1
-        self.__windowX = 240
-        self.__windowY = 240
-        self.__unitSize = 20
-        self.__bestScore = 0
-        self.__bestStep = 0
-        self.__numberGame = 0
-        self.__numberAllStep = 0
-        self.__maxNumberGame = maxNumberGame
-        self.__showScoreOnBoard = True
-        self.__showStepOnBoard = False
-        self.__fruitSpawn = False
-        self.__resultsHistory = []
+        self.__agent: agent.Agent = __agent
+        self.__gameInfo: gameInfo.GameInfo = gameInfo.GameInfo()
+        self.__snakeSpeed: int = 1
+        self.__windowX: int = 240
+        self.__windowY: int = 240
+        self.__unitSize: int = 20
+        self.__bestScore: int = 0
+        self.__bestStep: int = 0
+        self.__numberGame: int = 0
+        self.__numberAllStep: int = 0
+        self.__changeTo: str = ''
+        self.__maxNumberGame: int = maxNumberGame
+        self.__showScoreOnBoard: bool = True
+        self.__showStepOnBoard: bool = False
+        self.__fruitSpawn: bool = False
+        self.__direction: str = ''
+        self.__resultsHistory: List[List[int], List[int]] = []
 
         pygame.init()
         pygame.display.set_caption('Snake Game')
-        self.__gameWindow = pygame.display.set_mode((self.__windowX, self.__windowY))
-        self.__fps = pygame.time.Clock()
+        self.__gameWindow: pygame.display = pygame.display.set_mode((self.__windowX, self.__windowY), pygame.HIDDEN)
+        self.__fps: pygame.time.Clock = pygame.time.Clock()
 
-    def setSnakeSpeed(self, speed: int):
+    def setSnakeSpeed(self, speed: int) -> None:
         self.__snakeSpeed = speed
 
-    def setWindow(self, windowX: int, windowY: int):
+    def setWindow(self, windowX: int, windowY: int) -> None:
         self.__windowX = windowX
         self.__windowY = windowY
 
-    def setUnitSize(self, unitSize: int):
+    def setUnitSize(self, unitSize: int) -> None:
         self.__unitSize = unitSize
 
-    def setBackgroundColor(self, r: int, g: int, b: int):
+    def setBackgroundColor(self, r: int, g: int, b: int) -> None:
         self.__backgroundColor = pygame.Color(r, g, b)
 
-    def setScoreColor(self, r: int, g: int, b: int):
+    def setScoreColor(self, r: int, g: int, b: int) -> None:
         self.__scoreColor = pygame.Color(r, g, b)
 
-    def setAppleColor(self, r: int, g: int, b: int):
+    def setAppleColor(self, r: int, g: int, b: int) -> None:
         self.__appleColor = pygame.Color(r, g, b)
 
-    def setSnakeBodyColor(self, r: int, g: int, b: int):
+    def setSnakeBodyColor(self, r: int, g: int, b: int) -> None:
         self.__snakeBodyColor = pygame.Color(r, g, b)
 
-    def setSnakeHeadColor(self, r: int, g: int, b: int):
+    def setSnakeHeadColor(self, r: int, g: int, b: int) -> None:
         self.__snakeHeadColor = pygame.Color(r, g, b)
 
-    def setShowScore(self, show: bool):
+    def setShowScore(self, show: Optional[bool] = True) -> None:
         self.__showScoreOnBoard = show
 
-    def setShowStep(self, show: bool):
+    def setShowStep(self, show: Optional[bool] = True) -> None:
         self.__showStepOnBoard = show
 
-    def __showScore(self, color: pygame.Color, font: str, size: int):
+    def setShowGame(self, show: Optional[bool] = True) -> None:
+        if show:
+            self.__gameWindow: pygame.display = pygame.display.set_mode((self.__windowX, self.__windowY))
+        else:
+            self.__gameWindow: pygame.display = pygame.display.set_mode((self.__windowX, self.__windowY), pygame.HIDDEN)
+
+    def __showScore(self, color: pygame.Color, font: str, size: int) -> None:
         scoreFont = pygame.font.SysFont(font, size)
         scoreSurface = scoreFont.render('Score : ' + str(self.__score), True, color)
         scoreRect = scoreSurface.get_rect()
@@ -80,7 +87,7 @@ class Game:
         bestScoreRect.topright = (self.__windowX, 0)
         self.__gameWindow.blit(bestScoreSurface, bestScoreRect)
 
-    def __showStep(self, color: pygame.Color, font: str, size: int):
+    def __showStep(self, color: pygame.Color, font: str, size: int) -> None:
         stepFont = pygame.font.SysFont(font, size)
         stepSurface = stepFont.render('Step : ' + str(self.__step), True, color)
         stepRect = stepSurface.get_rect()
@@ -93,7 +100,7 @@ class Game:
         bestStepRect.bottomright = (self.__windowX, self.__windowY)
         self.__gameWindow.blit(bestStepSurface, bestStepRect)
 
-    def __gameOver(self):
+    def __gameOver(self) -> None:
         if self.__score > self.__bestScore:
             self.__bestScore = self.__score
 
@@ -103,15 +110,31 @@ class Game:
         self.__gameInfo._GameInfo__lastDirection = self.__direction
         self.__resultsHistory.append([self.__score, self.__step])
 
+        print("Number game: ", self.__numberGame)
+        print("Score: ", self.__score)
+        print("Step: ", self.__step)
+        print("------------------------------------------------")
+
         self.__newGame()
 
-    def __newGame(self):
+    def __info(self) -> None:
+        print("\n------------------------------------------------")
+        print("Settings game")
+        print("Resolution: ", self.__windowX, " x ", self.__windowY)
+        print("Unit size: ", self.__unitSize, " x ", self.__unitSize)
+        print("Speed snake: ", self.__snakeSpeed)
+        print("------------------------------------------------\n")
+
+    def __newGame(self) -> None:
         self.__snakePosition = [self.__windowX / 4 + self.__unitSize, self.__windowY / 2]
-        self.__snakeBody = [[self.__windowX / 4, self.__windowY / 2], [self.__windowX / 4 - self.__unitSize, self.__windowY / 2], [self.__windowX / 4 - self.__unitSize * 2, self.__windowY / 2]]
+        self.__snakeBody = [[self.__windowX / 4, self.__windowY / 2],
+                            [self.__windowX / 4 - self.__unitSize, self.__windowY / 2],
+                            [self.__windowX / 4 - self.__unitSize * 2, self.__windowY / 2]]
 
         if not self.__fruitSpawn:
             while not self.__fruitSpawn:
-                self.__fruitPosition = [random.randrange(1, (self.__windowX // self.__unitSize)) * self.__unitSize, random.randrange(1, (self.__windowY // self.__unitSize)) * self.__unitSize]
+                self.__fruitPosition = [random.randrange(1, (self.__windowX // self.__unitSize)) * self.__unitSize,
+                                        random.randrange(1, (self.__windowY // self.__unitSize)) * self.__unitSize]
                 self.__fruitSpawn = True
 
                 for pos in self.__snakeBody:
@@ -125,7 +148,7 @@ class Game:
         self.__step = 0
         self.__numberGame += 1
 
-    def __plot(self):
+    def __plot(self) -> None:
         plt.plot(self.__resultsHistory)
         plt.xlabel('Number game')
         plt.ylabel('Score / Step')
@@ -133,13 +156,15 @@ class Game:
         plt.gca().legend(('Score', 'Step'))
         plt.show()
 
-    def startGame(self):
+    def startGame(self) -> None:
+        self.__info()
         self.__newGame()
 
         while True:
             self.__snakeBody.insert(0, list(self.__snakePosition))
 
-            if self.__snakePosition[0] == self.__fruitPosition[0] and self.__snakePosition[1] == self.__fruitPosition[1]:
+            if self.__snakePosition[0] == self.__fruitPosition[0] and self.__snakePosition[1] == self.__fruitPosition[
+                1]:
                 self.__score += 1
                 self.__fruitSpawn = False
             else:
@@ -160,7 +185,8 @@ class Game:
 
             if not self.__fruitSpawn:
                 while not self.__fruitSpawn:
-                    self.__fruitPosition = [random.randrange(1, (self.__windowX // self.__unitSize)) * self.__unitSize, random.randrange(1, (self.__windowY // self.__unitSize)) * self.__unitSize]
+                    self.__fruitPosition = [random.randrange(1, (self.__windowX // self.__unitSize)) * self.__unitSize,
+                                            random.randrange(1, (self.__windowY // self.__unitSize)) * self.__unitSize]
                     self.__fruitSpawn = True
 
                     for pos in self.__snakeBody:
@@ -171,10 +197,15 @@ class Game:
             self.__gameWindow.fill(self.__backgroundColor)
 
             for pos in self.__snakeBody:
-                pygame.draw.rect(self.__gameWindow, self.__snakeBodyColor, pygame.Rect(pos[0], pos[1], self.__unitSize, self.__unitSize))
+                pygame.draw.rect(self.__gameWindow, self.__snakeBodyColor,
+                                 pygame.Rect(pos[0], pos[1], self.__unitSize, self.__unitSize))
 
-            pygame.draw.rect(self.__gameWindow, self.__appleColor, pygame.Rect(self.__fruitPosition[0], self.__fruitPosition[1], self.__unitSize, self.__unitSize))
-            pygame.draw.rect(self.__gameWindow, self.__snakeHeadColor, pygame.Rect(self.__snakeBody[0][0], self.__snakeBody[0][1], self.__unitSize, self.__unitSize))
+            pygame.draw.rect(self.__gameWindow, self.__appleColor,
+                             pygame.Rect(self.__fruitPosition[0], self.__fruitPosition[1], self.__unitSize,
+                                         self.__unitSize))
+            pygame.draw.rect(self.__gameWindow, self.__snakeHeadColor,
+                             pygame.Rect(self.__snakeBody[0][0], self.__snakeBody[0][1], self.__unitSize,
+                                         self.__unitSize))
 
             self.__gameInfo._GameInfo__gameScreenWithoutHUB = pygame.surfarray.array3d(self.__gameWindow)
 
@@ -192,7 +223,7 @@ class Game:
             self.__gameInfo._GameInfo__gameScore = self.__score
             self.__gameInfo._GameInfo__gameNumberAllStep = self.__numberAllStep
 
-            if self.__gameInfo._GameInfo__numberGame == None or self.__gameInfo._GameInfo__numberGame >= self.__numberGame:
+            if self.__gameInfo._GameInfo__numberGame is None or self.__gameInfo._GameInfo__numberGame >= self.__numberGame:
                 self.__gameInfo._GameInfo__lastDirection = self.__direction
 
             self.__gameInfo._GameInfo__numberGame = self.__numberGame
@@ -200,6 +231,7 @@ class Game:
             self.__changeTo = self.__agent.getNewDirection(self.__gameInfo)
 
             if self.__numberGame > self.__maxNumberGame or self.__gameInfo._GameInfo__stopGame:
+                pygame.quit()
                 self.__plot()
                 return
 
@@ -226,8 +258,3 @@ class Game:
 
             pygame.display.update()
             self.__fps.tick(self.__snakeSpeed)
-
-
-
-
-

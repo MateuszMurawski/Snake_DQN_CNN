@@ -1,20 +1,24 @@
+import numpy
+from dataclasses import dataclass
+
+@dataclass
 class GameInfo:
     def __init__(self):
         self.__gameScreenWithoutHUB = None
         self.__gameScreenWithHUB = None
-        self.__gameScore = None
-        self.__gameBestScore = None
-        self.__gameStep = None
-        self.__gameBestStep = None
-        self.__numberGame = None
-        self.__lastDirection = None
-        self.__stopGame = False
-        self.__gameNumberAllStep = None
+        self.__gameScore: int = 0
+        self.__gameBestScore: int = 0
+        self.__gameStep: int = 0
+        self.__gameBestStep: int = 0
+        self.__numberGame: int = 0
+        self.__lastDirection: str = ''
+        self.__stopGame: bool = False
+        self.__gameNumberAllStep: int = 0
 
-    def getGameScreenWithoutHUB(self):
+    def getGameScreenWithoutHUB(self) -> numpy.ndarray:
         return self.__gameScreenWithoutHUB
 
-    def getGameScreenWithHUB(self):
+    def getGameScreenWithHUB(self) -> numpy.ndarray:
         return self.__gameScreenWithHUB
 
     def getGameScore(self) -> int:
@@ -38,6 +42,6 @@ class GameInfo:
     def getNumberAllStep(self) -> int:
         return self.__gameNumberAllStep
 
-    def setStopGame(self, stop: bool):
+    def setStopGame(self, stop: bool) -> None:
         self.__stopGame = stop
 
