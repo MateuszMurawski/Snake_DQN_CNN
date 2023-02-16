@@ -131,10 +131,17 @@ class Game:
 
     def __info(self) -> None:
         print("\n------------------------------------------------")
-        print("Settings game")
+        print("* Settings game *")
         print("Resolution: ", self.__windowX, " x ", self.__windowY)
         print("Unit size: ", self.__unitSize, " x ", self.__unitSize)
         print("Speed snake: ", self.__snakeSpeed)
+        print("------------------------------------------------\n")
+
+    def __finalStats(self) -> None:
+        print("\n------------------------------------------------")
+        print("* Final stats *")
+        print("Best Score: ", self.__bestScore)
+        print("Best Step: ", self.__bestStep)
         print("------------------------------------------------\n")
 
     def __newGame(self) -> None:
@@ -237,6 +244,7 @@ class Game:
 
             if self.__numberGame > self.__maxNumberGame or self.__gameInfo._GameInfo__stopGame:
                 pygame.quit()
+                self.__finalStats()
                 return
 
             self.__step += 1
