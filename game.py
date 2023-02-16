@@ -1,10 +1,11 @@
 import random
+import time
 from typing import List, Optional
 import pygame
-from matplotlib import pyplot as plt
 
 import agent
 import gameInfo
+import plot
 
 
 class Game:
@@ -29,9 +30,10 @@ class Game:
         self.__maxNumberGame: int = maxNumberGame
         self.__showScoreOnBoard: bool = True
         self.__showStepOnBoard: bool = False
+        self.__showPlot: bool = False
         self.__fruitSpawn: bool = False
         self.__direction: str = ''
-        self.__resultsHistory: List[List[int], List[int]] = []
+        self.__resultsHistory: List[List[int], List[int], List[int]] = [[], [], []]
 
         pygame.init()
         pygame.display.set_caption('Snake Game')
@@ -68,6 +70,11 @@ class Game:
 
     def setShowStep(self, show: Optional[bool] = True) -> None:
         self.__showStepOnBoard = show
+
+    def setShowPlot(self, show: Optional[bool] = True) -> None:
+        if show:
+            plot.Plot.startServerPlot()
+            self.__showPlot = True
 
     def setShowGame(self, show: Optional[bool] = True) -> None:
         if show:
@@ -108,7 +115,12 @@ class Game:
             self.__bestStep = self.__step
 
         self.__gameInfo._GameInfo__lastDirection = self.__direction
-        self.__resultsHistory.append([self.__score, self.__step])
+        self.__resultsHistory[0].append(self.__numberGame)
+        self.__resultsHistory[1].append(self.__score)
+        self.__resultsHistory[2].append(self.__step)
+
+        if self.__showPlot:
+            plot.Plot.updateData(self.__numberGame, self.__score, self.__step)
 
         print("Number game: ", self.__numberGame)
         print("Score: ", self.__score)
@@ -148,15 +160,8 @@ class Game:
         self.__step = 0
         self.__numberGame += 1
 
-    def __plot(self) -> None:
-        plt.plot(self.__resultsHistory)
-        plt.xlabel('Number game')
-        plt.ylabel('Score / Step')
-        plt.title('Result history')
-        plt.gca().legend(('Score', 'Step'))
-        plt.show()
-
     def startGame(self) -> None:
+        time.sleep(1)
         self.__info()
         self.__newGame()
 
@@ -232,7 +237,6 @@ class Game:
 
             if self.__numberGame > self.__maxNumberGame or self.__gameInfo._GameInfo__stopGame:
                 pygame.quit()
-                self.__plot()
                 return
 
             self.__step += 1
@@ -256,5 +260,6 @@ class Game:
             if self.__direction == 'RIGHT':
                 self.__snakePosition[0] += self.__unitSize
 
+            pygame.event.pump()
             pygame.display.update()
             self.__fps.tick(self.__snakeSpeed)
