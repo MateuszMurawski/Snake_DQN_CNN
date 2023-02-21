@@ -36,7 +36,7 @@ class GameInfo:
     def getNumberGame(self) -> int:
         return self.__numberGame
 
-    def getLastDirection(self) -> str:
+    def getLastDirection(self) -> int:
         return self.__lastDirection
 
     def getNumberAllStep(self) -> int:

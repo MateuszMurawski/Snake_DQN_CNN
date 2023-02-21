@@ -26,15 +26,20 @@ class Game:
         self.__bestStep: int = 0
         self.__numberGame: int = 0
         self.__numberAllStep: int = 0
-        self.__changeTo: str = ''
+        self.__changeTo: int = -1
         self.__maxNumberGame: int = maxNumberGame
         self.__showScoreOnBoard: bool = True
         self.__showStepOnBoard: bool = False
         self.__showPlot: bool = False
         self.__fruitSpawn: bool = False
-        self.__direction: str = ''
+        self.__direction: int = -1
         self.__resultsHistory: List[List[int], List[int], List[int]] = [[], [], []]
-
+        
+        self.__UP = 0
+        self.__RIGHT = 1
+        self.__DOWN = 2
+        self.__LEFT = 3
+        
         pygame.init()
         pygame.display.set_caption('Snake Game')
         self.__gameWindow: pygame.display = pygame.display.set_mode((self.__windowX, self.__windowY), pygame.HIDDEN)
@@ -125,6 +130,7 @@ class Game:
         print("Number game: ", self.__numberGame)
         print("Score: ", self.__score)
         print("Step: ", self.__step)
+        print("Sum all steps: ", self.__numberAllStep)
         print("------------------------------------------------")
 
         self.__newGame()
@@ -150,18 +156,18 @@ class Game:
                             [self.__windowX / 4 - self.__unitSize, self.__windowY / 2],
                             [self.__windowX / 4 - self.__unitSize * 2, self.__windowY / 2]]
 
-        if not self.__fruitSpawn:
-            while not self.__fruitSpawn:
-                self.__fruitPosition = [random.randrange(1, (self.__windowX // self.__unitSize)) * self.__unitSize,
-                                        random.randrange(1, (self.__windowY // self.__unitSize)) * self.__unitSize]
-                self.__fruitSpawn = True
+        self.__fruitSpawn = False
 
-                for pos in self.__snakeBody:
-                    if pos == self.__fruitPosition:
-                        self.__fruitSpawn = False
-                        break
+        while not self.__fruitSpawn:
+            self.__fruitPosition = [random.randrange(1, (self.__windowX // self.__unitSize)) * self.__unitSize, random.randrange(1, (self.__windowY // self.__unitSize)) * self.__unitSize]
+            self.__fruitSpawn = True
 
-        self.__direction = 'RIGHT'
+            for pos in self.__snakeBody:
+                if pos == self.__fruitPosition:
+                    self.__fruitSpawn = False
+                    break
+
+        self.__direction = self.__RIGHT
         self.__changeTo = self.__direction
         self.__score = 0
         self.__step = 0
@@ -250,22 +256,22 @@ class Game:
             self.__step += 1
             self.__numberAllStep += 1
 
-            if self.__changeTo == 'UP' and self.__direction != 'DOWN':
-                self.__direction = 'UP'
-            if self.__changeTo == 'DOWN' and self.__direction != 'UP':
-                self.__direction = 'DOWN'
-            if self.__changeTo == 'LEFT' and self.__direction != 'RIGHT':
-                self.__direction = 'LEFT'
-            if self.__changeTo == 'RIGHT' and self.__direction != 'LEFT':
-                self.__direction = 'RIGHT'
+            if self.__changeTo == self.__UP and self.__direction != self.__DOWN:
+                self.__direction = self.__UP
+            if self.__changeTo == self.__DOWN and self.__direction != self.__UP:
+                self.__direction = self.__DOWN
+            if self.__changeTo == self.__LEFT and self.__direction != self.__RIGHT:
+                self.__direction = self.__LEFT
+            if self.__changeTo == self.__RIGHT and self.__direction != self.__LEFT:
+                self.__direction = self.__RIGHT
 
-            if self.__direction == 'UP':
+            if self.__direction == self.__UP:
                 self.__snakePosition[1] -= self.__unitSize
-            if self.__direction == 'DOWN':
+            if self.__direction == self.__DOWN:
                 self.__snakePosition[1] += self.__unitSize
-            if self.__direction == 'LEFT':
+            if self.__direction == self.__LEFT:
                 self.__snakePosition[0] -= self.__unitSize
-            if self.__direction == 'RIGHT':
+            if self.__direction == self.__RIGHT:
                 self.__snakePosition[0] += self.__unitSize
 
             pygame.event.pump()
