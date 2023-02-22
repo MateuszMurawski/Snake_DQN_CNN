@@ -11,9 +11,9 @@ class CNN(nn.Module):
 
         self.__device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-        self.__conv1 = nn.Conv2d(in_channels=1, out_channels=32, kernel_size=7, stride=4).to(self.__device)
-        self.__conv2 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=5, stride=2, padding=2).to(self.__device)
-        self.__conv3 = nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, stride=2, padding=2).to(self.__device)
+        self.__conv1 = nn.Conv2d(in_channels=1, out_channels=32, kernel_size=5, stride=2, padding=2).to(self.__device)
+        self.__conv2 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, stride=2, padding=1).to(self.__device)
+        self.__conv3 = nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, stride=2, padding=1).to(self.__device)
         self.__fc1 = nn.Linear(512, 512).to(self.__device)
         self.__fc2 = nn.Linear(512, 4).to(self.__device)
 
@@ -31,3 +31,5 @@ class CNN(nn.Module):
         modelFolderPpath = 'Path'
         fileName = os.path.join(modelFolderPpath, fileName)
         torch.save(self.state_dict(), fileName)
+
+

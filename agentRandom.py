@@ -1,6 +1,4 @@
 import random
-import time
-
 import cv2
 import torch
 
@@ -18,12 +16,13 @@ class AgentRandom(agent.Agent):
         self.__award: int = 0
         self.__lastPicture = None
         self.__sizeResize: int = 12
+        self.__lastDirection: int = None
 
         self.__lr: float = 0.001
         self.__gamma: float = 0.9
         self.__epsilon: float = 1.0
-        self.__stepWithoutLearn = 77000
-        self.__batchSize = 128
+        self.__stepWithoutLearn: int = 77000
+        self.__batchSize: int = 128
 
         self.__memory: memeory.Memory = memeory.Memory(1000000)
         self.__model: cnn.CNN = cnn.CNN()
@@ -35,14 +34,16 @@ class AgentRandom(agent.Agent):
     def getNewDirection(self, gameInfo: gameInfo.GameInfo) -> str:
         if gameInfo.getNumberAllStep():
             if self.__lastNumberGame < gameInfo.getNumberGame():
-                self.__award = -1
+                self.__award = -1.0
+                print("Predict direction: ", self.__lastDirection)
+                print("Real direction: ", gameInfo.getLastDirection())
                 print("Epsilon: ", self.__epsilon)
             elif self.__lastScore < gameInfo.getGameScore():
-                self.__award = 1
+                self.__award = 1.0
             else:
-                self.__award = 0.1
+                self.__award = 0.9
 
-            self.__memory.add(self.__compresionPicture(self.__lastPicture), gameInfo.getLastDirection(), self.__award,
+            self.__memory.add(self.__compresionPicture(self.__lastPicture), self.__lastDirection, self.__award,
                               self.__compresionPicture(gameInfo.getGameScreenWithoutHUB()))
 
         self.__lastScore = gameInfo.getGameScore()
@@ -50,24 +51,27 @@ class AgentRandom(agent.Agent):
         self.__lastPicture = gameInfo.getGameScreenWithoutHUB()
 
         if gameInfo.getNumberAllStep() < self.__stepWithoutLearn:
-            return random.randint(0, 3)
+            self.__lastDirection = random.randint(0, 3)
+            return self.__lastDirection
         else:
 
-            self.__trainOneStep(self.__compresionPicture(self.__lastPicture), gameInfo.getLastDirection(), self.__award, self.__compresionPicture(gameInfo.getGameScreenWithoutHUB()))
+            self.__trainOneStep(self.__compresionPicture(self.__lastPicture), self.__lastDirection, self.__award, self.__compresionPicture(gameInfo.getGameScreenWithoutHUB()))
 
-            if self.__award == -1:
+            if self.__award == -1.0:
                 self.__trainBatch(self.__batchSize)
 
-            self.__epsilon -= 0.00001
+            self.__epsilon -= 0.000002
             p = random.randint(0, 10000)/10000.0
 
             if p > self.__epsilon:
                 state = torch.tensor(self.__compresionPicture(gameInfo.getGameScreenWithoutHUB()), dtype=torch.float).to(self.__device)
                 state = torch.unsqueeze(state, 0).to(self.__device)
                 prediction = self.__model(state).to(self.__device)
-                return torch.argmax(prediction).item()
+                self.__lastDirection = torch.argmax(prediction).item()
+                return self.__lastDirection
             else:
-                return random.randint(0, 3)
+                self.__lastDirection = random.randint(0, 3)
+                return self.__lastDirection
 
 
     def __compresionPicture(self, screen):
