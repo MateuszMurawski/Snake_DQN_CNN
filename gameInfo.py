@@ -11,7 +11,7 @@ class GameInfo:
         self.__gameStep: int = 0
         self.__gameBestStep: int = 0
         self.__numberGame: int = 0
-        self.__lastDirection: str = ''
+        self.__lastDirection: int = None
         self.__stopGame: bool = False
         self.__gameNumberAllStep: int = 0
 

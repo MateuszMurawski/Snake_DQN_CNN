@@ -9,8 +9,8 @@ class Memory:
     def add(self, state, action, reward: float, next_state) -> None:
         self.__memory.append((state, action, reward, next_state))
 
-    def getSample(self, batchSize: int):
+    def getSamples(self, batchSize: int):
         return random.sample(self.__memory, batchSize)
 
-    def len(self) -> int:
-        return len(self.memory)
+    def getLastSample(self):
+        return self.__memory[-1]

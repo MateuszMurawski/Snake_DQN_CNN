@@ -21,7 +21,7 @@ class AgentRandom(agent.Agent):
         self.__lr: float = 0.001
         self.__gamma: float = 0.9
         self.__epsilon: float = 1.0
-        self.__stepWithoutLearn: int = 77000
+        self.__stepWithoutLearn: int = 200
         self.__batchSize: int = 128
 
         self.__memory: memeory.Memory = memeory.Memory(1000000)
@@ -55,7 +55,7 @@ class AgentRandom(agent.Agent):
             return self.__lastDirection
         else:
 
-            self.__trainOneStep(self.__compresionPicture(self.__lastPicture), self.__lastDirection, self.__award, self.__compresionPicture(gameInfo.getGameScreenWithoutHUB()))
+            self.__trainOneStep(self.__memory.getLastSample()[0], self.__lastDirection, self.__award, self.__compresionPicture(gameInfo.getGameScreenWithoutHUB()))
 
             if self.__award == -1.0:
                 self.__trainBatch(self.__batchSize)
@@ -80,9 +80,9 @@ class AgentRandom(agent.Agent):
         return [resized.transpose()[2]/255]
 
     def __trainBatch(self, batchSize):
-        miniSample = self.__memory.getSample(batchSize)
+        miniSample = self.__memory.getSamples(batchSize)
         states, actions, rewards, nextStates = zip(*miniSample)
-        self.__dqn.train(states, actions, rewards, nextStates, batchSize)
+        self.__dqn.train(states, actions, rewards, nextStates)
 
     def __trainOneStep(self, state, action, reward, nextState):
-        self.__dqn.train(state, [action], reward, nextState, 1)
+        self.__dqn.train(state, [action], reward, nextState)

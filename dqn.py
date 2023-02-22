@@ -12,15 +12,18 @@ class DQN:
         self.__optimer = optim.Adam(model.parameters(), lr=self.__lr)
         self.__criterion = nn.MSELoss().to(self.__device)
 
-    def train(self, state, action, reward: float, nextState, sumSumples: int):
+    def train(self, state, action, reward: float, nextState):
         state = torch.tensor(state, dtype=torch.float).to(self.__device)
         nextState = torch.tensor(nextState, dtype=torch.float).to(self.__device)
         action = torch.tensor(action, dtype=torch.int).to(self.__device)
         reward = torch.tensor(reward, dtype=torch.float).to(self.__device)
 
+        print(state)
+        print(nextState)
+
         nextState = torch.unsqueeze(nextState, 1).to(self.__device)
 
-        if sumSumples == 1:
+        if len(state.shape) == 3:
             state = torch.unsqueeze(state, 0).to(self.__device)
             nextState = torch.unsqueeze(nextState, 0).to(self.__device)
             reward = torch.unsqueeze(reward, 0).to(self.__device)
