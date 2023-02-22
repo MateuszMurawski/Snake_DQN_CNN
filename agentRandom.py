@@ -1,5 +1,7 @@
 import random
+from typing import Optional, List
 import cv2
+import numpy
 import torch
 
 import agent
@@ -10,19 +12,19 @@ import memeory
 
 
 class AgentRandom(agent.Agent):
-    def __init__(self):
+    def __init__(self, lr: Optional[float] = 0.001, gamma: Optional[float] = 0.9, stepWithoutLearn: Optional[int] = 200, batchSize: Optional[int] = 128):
         self.__lastScore: int = 0
         self.__lastNumberGame: int = 1
         self.__award: int = 0
         self.__lastPicture = None
         self.__sizeResize: int = 12
         self.__lastDirection: int = None
-
-        self.__lr: float = 0.001
-        self.__gamma: float = 0.9
         self.__epsilon: float = 1.0
-        self.__stepWithoutLearn: int = 200
-        self.__batchSize: int = 128
+
+        self.__lr: float = lr
+        self.__gamma: float = gamma
+        self.__stepWithoutLearn: int = stepWithoutLearn
+        self.__batchSize: int = batchSize
 
         self.__memory: memeory.Memory = memeory.Memory(1000000)
         self.__model: cnn.CNN = cnn.CNN()
@@ -31,7 +33,7 @@ class AgentRandom(agent.Agent):
         self.__device = 'cuda' if torch.cuda.is_available() else 'cpu'
         print("Device: ", self.__device)
 
-    def getNewDirection(self, gameInfo: gameInfo.GameInfo) -> str:
+    def getNewDirection(self, gameInfo: gameInfo.GameInfo) -> int:
         if gameInfo.getNumberAllStep():
             if self.__lastNumberGame < gameInfo.getNumberGame():
                 self.__award = -1.0
@@ -60,7 +62,7 @@ class AgentRandom(agent.Agent):
             if self.__award == -1.0:
                 self.__trainBatch(self.__batchSize)
 
-            self.__epsilon -= 0.000002
+            self.__epsilon -= 0.0000015
             p = random.randint(0, 10000)/10000.0
 
             if p > self.__epsilon:
@@ -74,15 +76,15 @@ class AgentRandom(agent.Agent):
                 return self.__lastDirection
 
 
-    def __compresionPicture(self, screen):
+    def __compresionPicture(self, screen: numpy.ndarray) -> List:
         cvImage = cv2.cvtColor(screen, cv2.COLOR_BGR2RGB)
         resized = cv2.resize(cvImage, (self.__sizeResize, self.__sizeResize), interpolation=cv2.INTER_NEAREST)
-        return [resized.transpose()[2]/255]
+        return [(resized.transpose()[2]/255).tolist()]
 
-    def __trainBatch(self, batchSize):
+    def __trainBatch(self, batchSize: int) -> None:
         miniSample = self.__memory.getSamples(batchSize)
         states, actions, rewards, nextStates = zip(*miniSample)
         self.__dqn.train(states, actions, rewards, nextStates)
 
-    def __trainOneStep(self, state, action, reward, nextState):
-        self.__dqn.train(state, [action], reward, nextState)
+    def __trainOneStep(self, state: List, action: int, reward: float, nextState: numpy.ndarray) -> None:
+        self.__dqn.train(state, [action], [reward], nextState)

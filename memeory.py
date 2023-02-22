@@ -1,16 +1,17 @@
 from collections import deque
 import random
+from typing import List
 
 
 class Memory:
     def __init__(self, capacity) -> None:
-        self.__memory = deque(maxlen=capacity)
+        self.__memory: deque = deque(maxlen=capacity)
 
-    def add(self, state, action, reward: float, next_state) -> None:
+    def add(self, state: List, action: int, reward: float, next_state: List) -> None:
         self.__memory.append((state, action, reward, next_state))
 
-    def getSamples(self, batchSize: int):
+    def getSamples(self, batchSize: int) -> List:
         return random.sample(self.__memory, batchSize)
 
-    def getLastSample(self):
+    def getLastSample(self) -> List:
         return self.__memory[-1]

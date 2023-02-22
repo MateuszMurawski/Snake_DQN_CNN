@@ -4,8 +4,8 @@ from dataclasses import dataclass
 @dataclass
 class GameInfo:
     def __init__(self):
-        self.__gameScreenWithoutHUB = None
-        self.__gameScreenWithHUB = None
+        self.__gameScreenWithoutHUB: numpy.ndarray = None
+        self.__gameScreenWithHUB: numpy.ndarray = None
         self.__gameScore: int = 0
         self.__gameBestScore: int = 0
         self.__gameStep: int = 0
