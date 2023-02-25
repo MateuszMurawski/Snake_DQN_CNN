@@ -4,9 +4,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-class CNN(nn.Module):
+class cnnDQN(nn.Module):
     def __init__(self) -> None:
-        super(CNN, self).__init__()
+        super(cnnDQN, self).__init__()
 
         self.__device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -17,17 +17,17 @@ class CNN(nn.Module):
         self.__fc2 = nn.Linear(512, 4).to(self.__device)
 
     def forward(self, x):
-        x = F.relu(self.__conv1(x))
-        x = F.relu(self.__conv2(x))
-        x = F.relu(self.__conv3(x))
-        x = torch.flatten(x, 1)
-        x = F.relu(self.__fc1(x))
+        x = F.relu(self.__conv1(x)).to(self.__device)
+        x = F.relu(self.__conv2(x)).to(self.__device)
+        x = F.relu(self.__conv3(x)).to(self.__device)
+        x = torch.flatten(x, 1).to(self.__device)
+        x = F.relu(self.__fc1(x)).to(self.__device)
         x = self.__fc2(x)
 
         return x
 
-    def save(self, fileName='model_name.pth'):
-        modelFolderPpath = 'Path'
+    def save(self, fileName='1.pth'):
+        modelFolderPpath = ''
         fileName = os.path.join(modelFolderPpath, fileName)
         torch.save(self.state_dict(), fileName)
 

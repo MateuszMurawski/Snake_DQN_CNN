@@ -1,19 +1,15 @@
 from typing import List
-
 import torch
 from torch import optim, nn
 
-import cnn
-
-
 class DQN:
-    def __init__(self, model, lr: float, gamma: float) -> None:
+    def __init__(self, model: nn.Module, learningRate: float, gamma: float) -> None:
         self.__device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-        self.__lr: float = lr
+        self.__learningRate: float = learningRate
         self.__gamma: float = gamma
-        self.__model: cnn.CNN = model
-        self.__optimer: optim = optim.Adam(model.parameters(), lr=self.__lr)
+        self.__model: nn.Module = model
+        self.__optimer: optim = optim.Adam(model.parameters(), lr=self.__learningRate)
         self.__criterion = nn.MSELoss().to(self.__device)
 
     def train(self, state: List, action: List, reward: List, nextState: List) -> None:
@@ -28,8 +24,8 @@ class DQN:
             state = torch.unsqueeze(state, 0).to(self.__device)
             nextState = torch.unsqueeze(nextState, 0).to(self.__device)
 
-        pred = self.__model(state).to(self.__device)
-        target = pred.clone().to(self.__device)
+        predict = self.__model(state).to(self.__device)
+        target = predict.clone().to(self.__device)
 
         for idx in range(len(state)):
             Qnew = reward[idx]
@@ -38,7 +34,7 @@ class DQN:
             target[idx][action[idx]] = Qnew
 
         self.__optimer.zero_grad()
-        loss = self.__criterion(target, pred)
+        loss = self.__criterion(target, predict)
         loss.backward()
 
         self.__optimer.step()
