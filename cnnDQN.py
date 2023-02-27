@@ -13,6 +13,7 @@ class cnnDQN(nn.Module):
         self.__conv1 = nn.Conv2d(in_channels=1, out_channels=32, kernel_size=5, stride=2, padding=2).to(self.__device)
         self.__conv2 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, stride=2, padding=1).to(self.__device)
         self.__conv3 = nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, stride=2, padding=1).to(self.__device)
+
         self.__fc1 = nn.Linear(512, 512).to(self.__device)
         self.__fc2 = nn.Linear(512, 4).to(self.__device)
 
@@ -21,14 +22,15 @@ class cnnDQN(nn.Module):
         x = F.relu(self.__conv2(x)).to(self.__device)
         x = F.relu(self.__conv3(x)).to(self.__device)
         x = torch.flatten(x, 1).to(self.__device)
+
         x = F.relu(self.__fc1(x)).to(self.__device)
         x = self.__fc2(x)
 
         return x
 
     def save(self, fileName='1.pth'):
-        modelFolderPpath = ''
-        fileName = os.path.join(modelFolderPpath, fileName)
+        modelFolderPath = ''
+        fileName = os.path.join(modelFolderPath, fileName)
         torch.save(self.state_dict(), fileName)
 
 

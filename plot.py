@@ -90,7 +90,9 @@ class Plot:
         Plot.__interval: int = 1
         Plot.__titlePlot: str = "Result history - All results"
 
+
         Plot.__app: dash.Dash = dash.Dash(__name__)
+        Plot.__app.title: str = 'Snake game - result history'
 
         __log: logging = logging.getLogger('werkzeug')
         __log.disabled: bool = True
@@ -120,7 +122,7 @@ class Plot:
                 }),
             dcc.Interval(
                 id='interval-component',
-                interval=1000,
+                interval=5000,
                 n_intervals=0
             ),
         ])

@@ -13,8 +13,10 @@ class cnnDDQN(nn.Module):
         self.__conv1 = nn.Conv2d(in_channels=1, out_channels=32, kernel_size=5, stride=2, padding=2).to(self.__device)
         self.__conv2 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, stride=2, padding=1).to(self.__device)
         self.__conv3 = nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, stride=2, padding=1).to(self.__device)
+
         self.__fc1Value = nn.Linear(512, 512).to(self.__device)
         self.__fc1Advantage = nn.Linear(512, 512).to(self.__device)
+
         self.__fc2Value = nn.Linear(512, 1).to(self.__device)
         self.__fc2Advantage = nn.Linear(512, 4).to(self.__device)
 
@@ -33,8 +35,8 @@ class cnnDDQN(nn.Module):
         return v + (a - a.mean().to(self.__device))
 
     def save(self, fileName='1.pth'):
-        modelFolderPpath = ''
-        fileName = os.path.join(modelFolderPpath, fileName)
+        modelFolderPath = ''
+        fileName = os.path.join(modelFolderPath, fileName)
         torch.save(self.state_dict(), fileName)
 
 

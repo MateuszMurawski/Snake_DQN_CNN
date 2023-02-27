@@ -10,36 +10,40 @@ import plot
 
 class Game:
     def __init__(self, __agent: agent.Agent, maxNumberGame: int) -> None:
+        self.__agent: agent.Agent = __agent
+        self.__maxNumberGame: int = maxNumberGame
+
         self.__backgroundColor: pygame.Color = pygame.Color(0, 0, 0)
         self.__scoreColor: pygame.Color = pygame.Color(0, 255, 255)
         self.__appleColor: pygame.Color = pygame.Color(255, 0, 0)
         self.__snakeBodyColor: pygame.Color = pygame.Color(85, 255, 0)
         self.__snakeHeadColor: pygame.Color = pygame.Color(170, 0, 200)
 
-        self.__agent: agent.Agent = __agent
-        self.__gameInfo: gameInfo.GameInfo = gameInfo.GameInfo()
         self.__snakeSpeed: int = 1
         self.__windowX: int = 240
         self.__windowY: int = 240
         self.__unitSize: int = 20
+        self.__showScoreOnBoard: bool = True
+        self.__showStepOnBoard: bool = False
+        self.__showPlot: bool = False
+
         self.__bestScore: int = 0
         self.__bestStep: int = 0
         self.__numberGame: int = 0
         self.__numberAllStep: int = 0
-        self.__changeTo: int = -1
-        self.__maxNumberGame: int = maxNumberGame
-        self.__showScoreOnBoard: bool = True
-        self.__showStepOnBoard: bool = False
-        self.__showPlot: bool = False
-        self.__fruitSpawn: bool = False
-        self.__direction: int = -1
         self.__resultsHistory: List[List[int], List[int], List[int]] = [[], [], []]
-        
+
+        self.__gameInfo: gameInfo.GameInfo = gameInfo.GameInfo()
+        self.__fruitSpawn: bool = False
+        self.__fruitPosition: List[int] = None
+        self.__changeTo: int = -1
+        self.__direction: int = -1
+
         self.__UP = 0
         self.__RIGHT = 1
         self.__DOWN = 2
         self.__LEFT = 3
-        
+
         pygame.init()
         pygame.display.set_caption('Snake Game')
         self.__gameWindow: pygame.display = pygame.display.set_mode((self.__windowX, self.__windowY), pygame.HIDDEN)
@@ -159,7 +163,8 @@ class Game:
         self.__fruitSpawn = False
 
         while not self.__fruitSpawn:
-            self.__fruitPosition = [random.randrange(1, (self.__windowX // self.__unitSize)) * self.__unitSize, random.randrange(1, (self.__windowY // self.__unitSize)) * self.__unitSize]
+            self.__fruitPosition = [random.randrange(1, (self.__windowX // self.__unitSize)) * self.__unitSize,
+                                    random.randrange(1, (self.__windowY // self.__unitSize)) * self.__unitSize]
             self.__fruitSpawn = True
 
             for pos in self.__snakeBody:

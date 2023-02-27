@@ -4,13 +4,14 @@ from torch import optim, nn
 
 class DQN:
     def __init__(self, model: nn.Module, learningRate: float, gamma: float) -> None:
-        self.__device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
         self.__learningRate: float = learningRate
         self.__gamma: float = gamma
         self.__model: nn.Module = model
+
         self.__optimer: optim = optim.Adam(model.parameters(), lr=self.__learningRate)
-        self.__criterion = nn.MSELoss().to(self.__device)
+        self.__criterion = nn.MSELoss()
+
+        self.__device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     def train(self, state: List, action: List, reward: List, nextState: List) -> None:
         state = torch.tensor(state, dtype=torch.float).to(self.__device)
@@ -34,7 +35,7 @@ class DQN:
             target[idx][action[idx]] = Qnew
 
         self.__optimer.zero_grad()
-        loss = self.__criterion(target, predict)
+        loss = self.__criterion(target, predict).to(self.__device)
         loss.backward()
 
         self.__optimer.step()

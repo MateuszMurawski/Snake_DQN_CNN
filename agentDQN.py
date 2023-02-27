@@ -17,7 +17,7 @@ import memeory
 class AgentDQN(agent.Agent):
     def __init__(self, learningRate: Optional[float] = 0.001, gamma: Optional[float] = 0.9,
                  stepWithoutLearn: Optional[int] = 77000, batchSize: Optional[int] = 128,
-                 memorySize: Optional[int] = 500000, epsilonReduction: Optional[float] = 0.000001, sizeResize: Optional[int] = 12):
+                 memorySize: Optional[int] = 500000, epsilonReduction: Optional[float] = 0.000001, sizeResize: Optional[int] = 12) -> None:
 
         self.__learningRate: float = learningRate
         self.__gamma: float = gamma
@@ -53,10 +53,10 @@ class AgentDQN(agent.Agent):
                 self.__award = 1.0
                 self.__awardReductionStep = 0.0
             else:
-                self.__awardReductionStep += (0.01/(gameInfo.getGameScore()+1))
-                self.__award = 0.1 - self.__awardReductionStep
-                if self.__award < -0.9:
-                    self.__award = -0.9
+                self.__awardReductionStep += (0.0025/(gameInfo.getGameScore()+1))
+                self.__award = 0.75 - self.__awardReductionStep
+                if self.__award < -0.25:
+                    self.__award = -0.25
 
             self.__memory.add(self.__compresionPicture(self.__lastPicture), self.__lastDirection, self.__award,
                               self.__compresionPicture(gameInfo.getGameScreenWithoutHUB()))

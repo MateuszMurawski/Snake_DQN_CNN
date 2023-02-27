@@ -4,7 +4,7 @@ from typing import List
 
 
 class Memory:
-    def __init__(self, capacity) -> None:
+    def __init__(self, capacity: int) -> None:
         self.__memory: deque = deque(maxlen=capacity)
 
     def add(self, state: List, action: int, reward: float, next_state: List) -> None:
