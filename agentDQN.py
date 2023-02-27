@@ -13,11 +13,11 @@ import gameInfo
 import memeory
 
 
-
 class AgentDQN(agent.Agent):
     def __init__(self, learningRate: Optional[float] = 0.001, gamma: Optional[float] = 0.9,
                  stepWithoutLearn: Optional[int] = 77000, batchSize: Optional[int] = 128,
-                 memorySize: Optional[int] = 500000, epsilonReduction: Optional[float] = 0.000001, sizeResize: Optional[int] = 12) -> None:
+                 memorySize: Optional[int] = 500000, epsilonReduction: Optional[float] = 0.000001,
+                 sizeResize: Optional[int] = 12, eta: Optional[float] = 0.8):
 
         self.__learningRate: float = learningRate
         self.__gamma: float = gamma
@@ -25,18 +25,21 @@ class AgentDQN(agent.Agent):
         self.__batchSize: int = batchSize
         self.__epsilonReduction: float = epsilonReduction
         self.__sizeResize: int = sizeResize
+        self.__eta: float = eta
 
         self.__lastScore: int = 0
         self.__lastNumberGame: int = 1
         self.__award: int = 0
-        self.__lastPicture = None
+        self.__lastPicture: numpy.ndarray = None
+        self.__lastPictureAddToMemory: numpy.ndarray = None
         self.__lastDirection: int = None
         self.__epsilon: float = 1.0
         self.__awardReductionStep: float = 0.0
 
-        self.__memory: memeory.Memory = memeory.Memory(memorySize)
+        self.__memoryGood: memeory.Memory = memeory.Memory(memorySize // 2)
+        self.__memoryBad: memeory.Memory = memeory.Memory(memorySize // 2)
         self.__model: nn.Module = cnnDDQN.cnnDDQN()
-        self.__dqn: dqn.DDQN = dqn.DQN(self.__model, self.__learningRate, self.__gamma)
+        self.__dqn: dqn.DQN = dqn.DQN(self.__model, self.__learningRate, self.__gamma)
 
         self.__device = 'cuda' if torch.cuda.is_available() else 'cpu'
         print("Device: ", self.__device)
@@ -53,13 +56,19 @@ class AgentDQN(agent.Agent):
                 self.__award = 1.0
                 self.__awardReductionStep = 0.0
             else:
-                self.__awardReductionStep += (0.0025/(gameInfo.getGameScore()+1))
-                self.__award = 0.75 - self.__awardReductionStep
-                if self.__award < -0.25:
-                    self.__award = -0.25
+                self.__awardReductionStep += (0.0015 / (gameInfo.getGameScore() + 1))
+                self.__award = 0.0 - self.__awardReductionStep
+                if self.__award < -0.5:
+                    self.__award = -0.5
 
-            self.__memory.add(self.__compresionPicture(self.__lastPicture), self.__lastDirection, self.__award,
-                              self.__compresionPicture(gameInfo.getGameScreenWithoutHUB()))
+            self.__lastPictureAddToMemory = self.__compresionPicture(self.__lastPicture)
+
+            if self.__award > 0.5:
+                self.__memoryGood.add(self.__lastPictureAddToMemory, self.__lastDirection, self.__award,
+                                      self.__compresionPicture(gameInfo.getGameScreenWithoutHUB()))
+            else:
+                self.__memoryBad.add(self.__lastPictureAddToMemory, self.__lastDirection, self.__award,
+                                     self.__compresionPicture(gameInfo.getGameScreenWithoutHUB()))
 
         self.__lastScore = gameInfo.getGameScore()
         self.__lastNumberGame = gameInfo.getNumberGame()
@@ -69,8 +78,7 @@ class AgentDQN(agent.Agent):
             self.__lastDirection = random.randint(0, 3)
             return self.__lastDirection
         else:
-            self.__trainOneStep(self.__memory.getLastSample()[0], self.__lastDirection, self.__award,
-                                self.__compresionPicture(gameInfo.getGameScreenWithoutHUB()))
+            self.__trainOneStep(self.__lastPictureAddToMemory, self.__lastDirection, self.__award, self.__compresionPicture(gameInfo.getGameScreenWithoutHUB()))
 
             if self.__award == -1.0:
                 self.__trainBatch(self.__batchSize)
@@ -95,9 +103,13 @@ class AgentDQN(agent.Agent):
         return [(resized.transpose()[2] / 255).tolist()]
 
     def __trainBatch(self, batchSize: int) -> None:
-        miniSample = self.__memory.getSamples(batchSize)
-        states, actions, rewards, nextStates = zip(*miniSample)
+        miniSamples = self.__memoryGood.getSamples(int(batchSize * self.__eta))
+        miniSamples += self.__memoryBad.getSamples(int(batchSize * (1 - self.__eta)))
+        states, actions, rewards, nextStates = zip(*miniSamples)
         self.__dqn.train(states, actions, rewards, nextStates)
+
+        if self.__eta > 0.5:
+            self.__eta -= 0.00003
 
     def __trainOneStep(self, state: List, action: int, reward: float, nextState: numpy.ndarray) -> None:
         self.__dqn.train(state, [action], [reward], nextState)

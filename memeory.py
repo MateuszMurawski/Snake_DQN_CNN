@@ -11,7 +11,8 @@ class Memory:
         self.__memory.append((state, action, reward, next_state))
 
     def getSamples(self, batchSize: int) -> List:
-        return random.sample(self.__memory, batchSize)
+        if batchSize > len(self.__memory):
+            return random.sample(self.__memory, len(self.__memory))
+        else:
+            return random.sample(self.__memory, batchSize)
 
-    def getLastSample(self) -> List:
-        return self.__memory[-1]
