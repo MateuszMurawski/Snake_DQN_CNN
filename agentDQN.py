@@ -75,8 +75,6 @@ class AgentDQN(agent.Agent):
 
             self.__lastPictureAddToMemory = self.__compresionPicture(self.__lastPicture)
 
-            print(self.__award)
-
             if self.__award > 0.5:
                 self.__memoryGood.add(self.__lastPictureAddToMemory, self.__lastDirection, self.__award,
                                       self.__compresionPicture(gameInfo.getGameScreenWithoutHUB()))
