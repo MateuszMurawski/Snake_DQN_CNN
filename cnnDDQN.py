@@ -1,4 +1,4 @@
-import os
+from typing import Optional
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -34,9 +34,7 @@ class cnnDDQN(nn.Module):
 
         return v + (a - a.mean().to(self.__device))
 
-    def save(self, fileName='1.pth'):
-        modelFolderPath = ''
-        fileName = os.path.join(modelFolderPath, fileName)
+    def save(self, fileName: Optional[str] = 'model.pth'):
         torch.save(self.state_dict(), fileName)
 
 

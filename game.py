@@ -240,6 +240,8 @@ class Game:
 
             self.__gameInfo._GameInfo__gameScreenWithHUB = pygame.surfarray.array3d(self.__gameWindow)
 
+            self.__gameInfo._GameInfo__snakePosition = self.__snakePosition
+            self.__gameInfo._GameInfo__fruitPosition = self.__fruitPosition
             self.__gameInfo._GameInfo__gameBestStep = self.__bestStep
             self.__gameInfo._GameInfo__gameStep = self.__step
             self.__gameInfo._GameInfo__gameBestStep = self.__bestScore

@@ -1,3 +1,5 @@
+from typing import List
+
 import numpy
 from dataclasses import dataclass
 
@@ -14,6 +16,8 @@ class GameInfo:
         self.__lastDirection: int = None
         self.__stopGame: bool = False
         self.__gameNumberAllStep: int = 0
+        self.__snakePosition: List[int, int] = None
+        self.__fruitPosition: List[int, int] = None
 
     def getGameScreenWithoutHUB(self) -> numpy.ndarray:
         return self.__gameScreenWithoutHUB
@@ -41,6 +45,12 @@ class GameInfo:
 
     def getNumberAllStep(self) -> int:
         return self.__gameNumberAllStep
+
+    def getSnakePosition(self) -> List:
+        return self.__snakePosition
+
+    def getFruitPosition(self) -> List:
+        return self.__fruitPosition
 
     def setStopGame(self, stop: bool) -> None:
         self.__stopGame = stop
