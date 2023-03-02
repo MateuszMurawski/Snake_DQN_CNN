@@ -19,23 +19,21 @@ class DQN:
         action = torch.tensor(action, dtype=torch.int).to(self.__device)
         reward = torch.tensor(reward, dtype=torch.float).to(self.__device)
 
-        nextState = torch.unsqueeze(nextState, 1).to(self.__device)
-
         if len(state.shape) == 3:
             state = torch.unsqueeze(state, 0).to(self.__device)
             nextState = torch.unsqueeze(nextState, 0).to(self.__device)
 
         predict = self.__model(state).to(self.__device)
+        maxNext = torch.max(self.__model(nextState).to(self.__device), 1)
         target = predict.clone().to(self.__device)
 
         for idx in range(len(state)):
             Qnew = reward[idx]
             if reward[idx] != -1.0 and reward[idx] != 1.0:
-                Qnew = reward[idx] + self.__gamma * torch.max(self.__model(nextState[idx]).to(self.__device))
+                Qnew = reward[idx] + self.__gamma * maxNext[idx]
             target[idx][action[idx]] = Qnew
 
         self.__optimer.zero_grad()
         loss = self.__criterion(target, predict).to(self.__device)
         loss.backward()
-
         self.__optimer.step()

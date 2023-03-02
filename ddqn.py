@@ -36,9 +36,8 @@ class DDQN:
                 Qnew = reward[idx] + self.__gamma * nextTarget[idx][maxNextActions[idx]]
             target[idx][action[idx]] = Qnew
 
-        loss = self.__criterion(target, predict).to(self.__device)
-
         self.__optimer.zero_grad()
+        loss = self.__criterion(target, predict).to(self.__device)
         loss.backward()
         self.__optimer.step()
 
