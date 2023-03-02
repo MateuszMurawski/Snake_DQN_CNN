@@ -24,13 +24,13 @@ class DQN:
             nextState = torch.unsqueeze(nextState, 0).to(self.__device)
 
         predict = self.__model(state).to(self.__device)
-        maxNext = torch.max(self.__model(nextState).to(self.__device), 1)
+        next = self.__model(nextState).to(self.__device)
         target = predict.clone().to(self.__device)
 
         for idx in range(len(state)):
             Qnew = reward[idx]
             if reward[idx] != -1.0 and reward[idx] != 1.0:
-                Qnew = reward[idx] + self.__gamma * maxNext[idx]
+                Qnew = reward[idx] + self.__gamma * torch.max(next[idx])
             target[idx][action[idx]] = Qnew
 
         self.__optimer.zero_grad()
