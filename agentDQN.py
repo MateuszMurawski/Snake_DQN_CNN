@@ -19,7 +19,7 @@ class AgentDQN(agent.Agent):
     def __init__(self, learningRate: Optional[float] = 0.001, gamma: Optional[float] = 0.9,
                  stepWithoutLearn: Optional[int] = 77000, batchSize: Optional[int] = 128,
                  memorySize: Optional[int] = 500000, epsilonReduction: Optional[float] = 0.000001,
-                 sizeResize: Optional[int] = 12, eta: Optional[float] = 0.8, tau: Optional[float] = 0.01):
+                 sizeResize: Optional[int] = 12, eta: Optional[float] = 0.8, tau: Optional[float] = 0.01, fileName: Optional[str] = 'model.pth'):
 
         self.__learningRate: float = learningRate
         self.__gamma: float = gamma
@@ -29,6 +29,7 @@ class AgentDQN(agent.Agent):
         self.__sizeResize: int = sizeResize
         self.__eta: float = eta
         self.__tau: float = tau
+        self.__fileName: str = fileName
 
         self.__lastScore: int = 0
         self.__lastNumberGame: int = 1
@@ -38,7 +39,8 @@ class AgentDQN(agent.Agent):
         self.__lastDirection: int = None
         self.__epsilon: float = 1.0
         self.__awardReductionStep: float = 0.0
-        self.__lastDistance: float = None
+        self.__lastDistance: float = 0.0
+        self.__skipNextStep: bool = True
 
         self.__memoryGood: memeory.Memory = memeory.Memory(memorySize // 2)
         self.__memoryBad: memeory.Memory = memeory.Memory(memorySize // 2)
@@ -53,12 +55,17 @@ class AgentDQN(agent.Agent):
             if self.__lastNumberGame < gameInfo.getNumberGame():
                 self.__award = -1.0
                 self.__awardReductionStep = 0.0
+                self.__skipNextStep = False
+
                 if gameInfo.getNumberGame() % 1000 == 0:
                     print("Epsilon: ", self.__epsilon)
-                    self.__model.save('1.pth')
+                    self.__model.save(self.__fileName)
+
             elif self.__lastScore < gameInfo.getGameScore():
                 self.__award = 1.0
                 self.__awardReductionStep = 0.0
+                self.__skipNextStep = True
+
             else:
                 distance = self.__distance(gameInfo.getSnakePosition(), gameInfo.getFruitPosition())
                 self.__award = math.log((((gameInfo.getGameScore() + 3) + self.__lastDistance) / (
@@ -68,32 +75,32 @@ class AgentDQN(agent.Agent):
                 self.__awardReductionStep += (0.0015 / (gameInfo.getGameScore() + 1))
                 self.__award -= self.__awardReductionStep
 
-                if self.__award < -0.8:
-                    self.__award = -0.8
+                if self.__award < -0.5:
+                    self.__award = -0.5
                 elif self.__award > 0.8:
                     self.__award = 0.8
 
-            self.__lastPictureAddToMemory = self.__compresionPicture(self.__lastPicture)
+            if not self.__skipNextStep:
+                self.__lastPictureAddToMemory = self.__compresionPicture(self.__lastPicture)
 
-            if self.__award > 0.3:
-                self.__memoryGood.add(self.__lastPictureAddToMemory, self.__lastDirection, self.__award,
-                                      self.__compresionPicture(gameInfo.getGameScreenWithoutHUB()))
-            else:
-                self.__memoryBad.add(self.__lastPictureAddToMemory, self.__lastDirection, self.__award,
-                                     self.__compresionPicture(gameInfo.getGameScreenWithoutHUB()))
+                if self.__award > 0.3:
+                    self.__memoryGood.add(self.__lastPictureAddToMemory, self.__lastDirection, self.__award,
+                                          self.__compresionPicture(gameInfo.getGameScreenWithoutHUB()))
+                else:
+                    self.__memoryBad.add(self.__lastPictureAddToMemory, self.__lastDirection, self.__award,
+                                         self.__compresionPicture(gameInfo.getGameScreenWithoutHUB()))
 
         self.__lastScore = gameInfo.getGameScore()
         self.__lastNumberGame = gameInfo.getNumberGame()
         self.__lastPicture = gameInfo.getGameScreenWithoutHUB()
 
-        self.__lastDistance = self.__distance(gameInfo.getSnakePosition(), gameInfo.getFruitPosition())
-
         if gameInfo.getNumberAllStep() < self.__stepWithoutLearn:
             self.__lastDirection = random.randint(0, 3)
             return self.__lastDirection
         else:
-            self.__trainOneStep(self.__lastPictureAddToMemory, self.__lastDirection, self.__award,
-                                self.__compresionPicture(gameInfo.getGameScreenWithoutHUB()))
+            if not self.__skipNextStep:
+                self.__trainOneStep(self.__lastPictureAddToMemory, self.__lastDirection, self.__award,
+                                    self.__compresionPicture(gameInfo.getGameScreenWithoutHUB()))
 
             if self.__award == -1.0:
                 self.__trainBatch(self.__batchSize)
