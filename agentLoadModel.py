@@ -6,13 +6,16 @@ from torch import nn
 
 import agent
 import gameInfo
-from cnnDDQN import cnnDDQN
+import cnnDDQN
 
 
 class AgentLoadModel(agent.Agent):
-    def __init__(self, fileName: Optional[str] = 'model.pth') -> None:
+    def __init__(self, fileName: Optional[str] = 'model.pth', sizeResize: Optional[int] = 12) -> None:
         self.__model: nn.Module = cnnDDQN.cnnDDQN()
         self.__model.load_state_dict(torch.load(fileName))
+        self.__sizeResize = sizeResize
+
+        self.__device = 'cuda' if torch.cuda.is_available() else 'cpu'
     def getNewDirection(self, gameInfo: gameInfo.GameInfo) -> int:
         state = torch.tensor(self.__compresionPicture(gameInfo.getGameScreenWithoutHUB()),
                              dtype=torch.float).to(self.__device)

@@ -32,7 +32,7 @@ class DDQN:
 
         for idx in range(len(state)):
             Qnew = reward[idx]
-            if reward[idx] != -1.0:
+            if reward[idx] != -1.0 and reward[idx] != 1.0:
                 Qnew = reward[idx] + self.__gamma * nextTarget[idx][maxNextActions[idx]]
             target[idx][action[idx]] = Qnew
 

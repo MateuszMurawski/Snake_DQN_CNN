@@ -30,7 +30,7 @@ class DQN:
 
         for idx in range(len(state)):
             Qnew = reward[idx]
-            if reward[idx] != -1.0:
+            if reward[idx] != -1.0 and reward[idx] != 1.0:
                 Qnew = reward[idx] + self.__gamma * torch.max(self.__model(nextState[idx]).to(self.__device))
             target[idx][action[idx]] = Qnew
 
