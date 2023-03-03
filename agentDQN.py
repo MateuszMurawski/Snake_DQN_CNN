@@ -39,8 +39,7 @@ class AgentDQN(agent.Agent):
         self.__lastDirection: int = None
         self.__epsilon: float = 1.0
         self.__awardReductionStep: float = 0.0
-        self.__lastDistance: float = 0.0
-        self.__skipNextStep: bool = True
+        self.__lastDistance: float = None
 
         self.__memoryGood: memeory.Memory = memeory.Memory(memorySize // 2)
         self.__memoryBad: memeory.Memory = memeory.Memory(memorySize // 2)
@@ -55,21 +54,21 @@ class AgentDQN(agent.Agent):
             if self.__lastNumberGame < gameInfo.getNumberGame():
                 self.__award = -1.0
                 self.__awardReductionStep = 0.0
-                self.__skipNextStep = False
-
                 if gameInfo.getNumberGame() % 1000 == 0:
                     print("Epsilon: ", self.__epsilon)
                     self.__model.save(self.__fileName)
-
             elif self.__lastScore < gameInfo.getGameScore():
                 self.__award = 1.0
                 self.__awardReductionStep = 0.0
-                self.__skipNextStep = True
-
             else:
                 distance = self.__distance(gameInfo.getSnakePosition(), gameInfo.getFruitPosition())
-                self.__award = math.log((((gameInfo.getGameScore() + 3) + self.__lastDistance) / (
-                            (gameInfo.getGameScore() + 3) + distance)), gameInfo.getGameScore() + 3)
+
+                if self.__award:
+                    self.__award = math.log((((gameInfo.getGameScore() + 3) + self.__lastDistance) / (
+                                (gameInfo.getGameScore() + 3) + distance)), gameInfo.getGameScore() + 3)
+                else:
+                    self.__award = 0
+
                 self.__lastDistance = distance
 
                 self.__awardReductionStep += (0.0015 / (gameInfo.getGameScore() + 1))
@@ -80,27 +79,27 @@ class AgentDQN(agent.Agent):
                 elif self.__award > 0.8:
                     self.__award = 0.8
 
-            if not self.__skipNextStep:
-                self.__lastPictureAddToMemory = self.__compresionPicture(self.__lastPicture)
+            self.__lastPictureAddToMemory = self.__compresionPicture(self.__lastPicture)
 
-                if self.__award > 0.3:
-                    self.__memoryGood.add(self.__lastPictureAddToMemory, self.__lastDirection, self.__award,
-                                          self.__compresionPicture(gameInfo.getGameScreenWithoutHUB()))
-                else:
-                    self.__memoryBad.add(self.__lastPictureAddToMemory, self.__lastDirection, self.__award,
-                                         self.__compresionPicture(gameInfo.getGameScreenWithoutHUB()))
+            if self.__award > 0.3:
+                self.__memoryGood.add(self.__lastPictureAddToMemory, self.__lastDirection, self.__award,
+                                      self.__compresionPicture(gameInfo.getGameScreenWithoutHUB()))
+            else:
+                self.__memoryBad.add(self.__lastPictureAddToMemory, self.__lastDirection, self.__award,
+                                     self.__compresionPicture(gameInfo.getGameScreenWithoutHUB()))
 
         self.__lastScore = gameInfo.getGameScore()
         self.__lastNumberGame = gameInfo.getNumberGame()
         self.__lastPicture = gameInfo.getGameScreenWithoutHUB()
 
+        self.__lastDistance = self.__distance(gameInfo.getSnakePosition(), gameInfo.getFruitPosition())
+
         if gameInfo.getNumberAllStep() < self.__stepWithoutLearn:
             self.__lastDirection = random.randint(0, 3)
             return self.__lastDirection
         else:
-            if not self.__skipNextStep:
-                self.__trainOneStep(self.__lastPictureAddToMemory, self.__lastDirection, self.__award,
-                                    self.__compresionPicture(gameInfo.getGameScreenWithoutHUB()))
+            self.__trainOneStep(self.__lastPictureAddToMemory, self.__lastDirection, self.__award,
+                                self.__compresionPicture(gameInfo.getGameScreenWithoutHUB()))
 
             if self.__award == -1.0:
                 self.__trainBatch(self.__batchSize)
