@@ -19,7 +19,7 @@ class AgentDQN(agent.Agent):
     def __init__(self, learningRate: Optional[float] = 0.001, gamma: Optional[float] = 0.9,
                  stepWithoutLearn: Optional[int] = 77000, batchSize: Optional[int] = 128,
                  memorySize: Optional[int] = 500000, epsilonReduction: Optional[float] = 0.000001,
-                 sizeResize: Optional[int] = 12, eta: Optional[float] = 0.8, tau: Optional[float] = 0.01, fileName: Optional[str] = 'model.pth'):
+                 sizeResize: Optional[int] = 12, eta: Optional[float] = 0.8, tau: Optional[float] = 0.01, fileName: Optional[str] = 'model'):
 
         self.__learningRate: float = learningRate
         self.__gamma: float = gamma
@@ -43,7 +43,7 @@ class AgentDQN(agent.Agent):
 
         self.__memoryGood: memeory.Memory = memeory.Memory(memorySize // 2)
         self.__memoryBad: memeory.Memory = memeory.Memory(memorySize // 2)
-        self.__model: nn.Module = cnnDDQN.cnnDDQN()
+        self.__model: nn.Module = cnnDQN.cnnDQN()
         self.__dqn: dqn.DQN = dqn.DQN(self.__model, self.__learningRate, self.__gamma)
 
         self.__device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -56,18 +56,18 @@ class AgentDQN(agent.Agent):
                 self.__awardReductionStep = 0.0
                 if gameInfo.getNumberGame() % 1000 == 0:
                     print("Epsilon: ", self.__epsilon)
-                    self.__model.save(self.__fileName)
+                    self.__model.save(self.__fileName + str(gameInfo.getNumberGame()//1000))
             elif self.__lastScore < gameInfo.getGameScore():
                 self.__award = 1.0
                 self.__awardReductionStep = 0.0
             else:
                 distance = self.__distance(gameInfo.getSnakePosition(), gameInfo.getFruitPosition())
 
-                if self.__award:
+                if self.__award != 1.0 and self.__award != -1.0:
                     self.__award = math.log((((gameInfo.getGameScore() + 3) + self.__lastDistance) / (
                                 (gameInfo.getGameScore() + 3) + distance)), gameInfo.getGameScore() + 3)
                 else:
-                    self.__award = 0
+                    self.__award = 0.0
 
                 self.__lastDistance = distance
 

@@ -34,7 +34,7 @@ class cnnDDQN(nn.Module):
 
         return v + (a - a.mean().to(self.__device))
 
-    def save(self, fileName: Optional[str] = 'model.pth'):
-        torch.save(self.state_dict(), fileName)
+    def save(self, fileName: Optional[str] = 'model'):
+        torch.save(self.state_dict(), fileName + ".pth")
 
 
