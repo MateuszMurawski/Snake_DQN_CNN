@@ -10,7 +10,7 @@ class DDQN:
         self.__modelTarget: nn.Module = model
         self.__tau = tau
 
-        self.__optimer: optim = optim.Adam(self.__model.parameters(), lr=learningRate, max_norm=1.0)
+        self.__optimer: optim = optim.Adam(self.__model.parameters(), lr=learningRate)
         self.__criterion = nn.MSELoss()
 
         self.__device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -39,6 +39,7 @@ class DDQN:
         self.__optimer.zero_grad()
         loss = self.__criterion(target, predict).to(self.__device)
         loss.backward()
+        nn.utils.clip_grad_norm_(self.__model.parameters(), max_norm=1.0)
         self.__optimer.step()
 
         for targetParam, param in zip(self.__modelTarget.parameters(), self.__model.parameters()):

@@ -8,7 +8,7 @@ class DQN:
         self.__gamma: float = gamma
         self.__model: nn.Module = model
 
-        self.__optimer: optim = optim.Adam(model.parameters(), lr=self.__learningRate, max_norm=1.0)
+        self.__optimer: optim = optim.Adam(model.parameters(), lr=self.__learningRate)
         self.__criterion = nn.MSELoss()
 
         self.__device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -36,4 +36,5 @@ class DQN:
         self.__optimer.zero_grad()
         loss = self.__criterion(target, predict).to(self.__device)
         loss.backward()
+        nn.utils.clip_grad_norm_(self.__model.parameters(), max_norm=1.0)
         self.__optimer.step()

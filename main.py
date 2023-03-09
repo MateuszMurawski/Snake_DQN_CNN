@@ -6,7 +6,7 @@ import agentRandom
 import game
 
 def main():
-    newAgent: agent.Agent = agentDQN.AgentDQN(0.0025, 0.99, 40000, 32, 50000, 0.000001, 12, 0.01, "modele\model")
+    newAgent: agent.Agent = agentDQN.AgentDQN(0.0025, 0.99, 100, 32, 50000, 0.000001, 12, 0.01, "modele\model")
     #newAgent: agent.Agent = agentLoadModel.AgentLoadModel("1.pth")
     newGame: game.Game = game.Game(newAgent, 1000000)
     newGame.setSnakeSpeed(100000000)

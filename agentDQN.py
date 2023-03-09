@@ -110,8 +110,5 @@ class AgentDQN(agent.Agent):
         states, actions, rewards, nextStates = zip(*samples)
         self.__dqn.train(states, actions, rewards, nextStates)
 
-        if self.__eta > 0.5:
-            self.__eta -= 0.00003
-
     def __trainOneStep(self, state: List, action: int, reward: float, nextState: numpy.ndarray) -> None:
         self.__dqn.train(state, [action], [reward], nextState)
