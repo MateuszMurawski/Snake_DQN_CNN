@@ -36,5 +36,5 @@ class DQN:
         self.__optimer.zero_grad()
         loss = self.__criterion(target, predict).to(self.__device)
         loss.backward()
-        nn.utils.clip_grad_norm_(self.__model.parameters(), max_norm=1.0)
+        nn.utils.clip_grad_value_(self.__model.parameters(), 1.0)
         self.__optimer.step()

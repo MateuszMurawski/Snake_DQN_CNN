@@ -20,9 +20,9 @@ class Game:
         self.__snakeHeadColor: pygame.Color = pygame.Color(170, 0, 200)
 
         self.__snakeSpeed: int = 1
-        self.__windowX: int = 240
-        self.__windowY: int = 240
-        self.__unitSize: int = 20
+        self.__windowX: int = 252
+        self.__windowY: int = 252
+        self.__unitSize: int = 21
         self.__showScoreOnBoard: bool = True
         self.__showStepOnBoard: bool = False
         self.__showPlot: bool = False
