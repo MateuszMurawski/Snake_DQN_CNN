@@ -8,7 +8,7 @@ class DQN:
         self.__gamma: float = gamma
         self.__model: nn.Module = model
 
-        self.__optimer: optim = optim.Adam(model.parameters(), lr=self.__learningRate)
+        self.__optimer: optim = optim.Adam(model.parameters(), lr=self.__learningRate, max_norm=1.0)
         self.__criterion = nn.MSELoss()
 
         self.__device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -29,7 +29,7 @@ class DQN:
 
         for idx in range(len(state)):
             Qnew = reward[idx]
-            if reward[idx] != -1.0 and reward[idx] != 1.0:
+            if reward[idx] != -1.0:
                 Qnew = reward[idx] + self.__gamma * torch.max(next[idx])
             target[idx][action[idx]] = Qnew
 

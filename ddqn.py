@@ -10,7 +10,7 @@ class DDQN:
         self.__modelTarget: nn.Module = model
         self.__tau = tau
 
-        self.__optimer: optim = optim.Adam(self.__model.parameters(), lr=learningRate)
+        self.__optimer: optim = optim.Adam(self.__model.parameters(), lr=learningRate, max_norm=1.0)
         self.__criterion = nn.MSELoss()
 
         self.__device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -32,7 +32,7 @@ class DDQN:
 
         for idx in range(len(state)):
             Qnew = reward[idx]
-            if reward[idx] != -1.0 and reward[idx] != 1.0:
+            if reward[idx] != -1.0:
                 Qnew = reward[idx] + self.__gamma * nextTarget[idx][maxNextActions[idx]]
             target[idx][action[idx]] = Qnew
 
