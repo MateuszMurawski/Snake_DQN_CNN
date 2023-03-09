@@ -63,7 +63,7 @@ class AgentDQN(agent.Agent):
 
             self.__memory.add(self.__lastFrames.getNow(), self.__lastDirection, self.__award, self.__lastFrames.getNext())
 
-        if gameInfo.getNumberGame() % 1000 == 0:
+        if gameInfo.getNumberGame() % 1000 == 0 and self.__award == -1.0:
             print("Epsilon: ", self.__epsilon)
             self.__model.save(self.__fileName + str(gameInfo.getNumberGame() // 1000))
 
