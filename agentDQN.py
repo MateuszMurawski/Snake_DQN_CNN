@@ -39,6 +39,7 @@ class AgentDQN(agent.Agent):
         self.__award: int = 0
         self.__lastDirection: int = None
         self.__epsilon: float = 1.0
+        self.__counterSkip: int = 0
 
         self.__memory: memeory.Memory = memeory.Memory(memorySize)
         self.__lastFrames: frame.Frame = frame.Frame(5)
@@ -50,18 +51,22 @@ class AgentDQN(agent.Agent):
 
     def getNewDirection(self, gameInfo: gameInfo.GameInfo) -> int:
         self.__lastFrames.add(self.__compresionPicture(gameInfo.getGameScreenWithoutHUB()))
+        self.__counterSkip += 1
 
         if self.__lastFrames.getSize() > 4:
             if self.__lastNumberGame < gameInfo.getNumberGame():
                 self.__award = -1.0
+                self.__counterSkip = 0
 
             elif self.__lastScore < gameInfo.getGameScore():
                 self.__award = 1.0
+                self.__counterSkip = 0
 
             else:
                 self.__award = -0.1
 
-            self.__memory.add(self.__lastFrames.getNow(), self.__lastDirection, self.__award, self.__lastFrames.getNext())
+            if self.__counterSkip > 4:
+                self.__memory.add(self.__lastFrames.getNow(), self.__lastDirection, self.__award, self.__lastFrames.getNext())
 
         if gameInfo.getNumberGame() % 1000 == 0 and self.__award == -1.0:
             print("Epsilon: ", self.__epsilon)
@@ -74,20 +79,18 @@ class AgentDQN(agent.Agent):
             self.__lastDirection = random.randint(0, 3)
             return self.__lastDirection
         else:
-            if self.__lastFrames.getSize() > 4:
+            if self.__counterSkip > 4:
                 self.__trainOneStep(self.__lastFrames.getNow(), self.__lastDirection, self.__award, self.__lastFrames.getNext())
 
             if self.__award == -1.0:
                 self.__trainBatch(self.__batchSize)
-                self.__lastFrames.clear()
                 self.__award = 0.0
 
             self.__epsilon -= self.__epsilonReduction
             p = random.randint(0, 10000) / 10000.0
 
             if p > self.__epsilon and self.__lastFrames.getSize() > 4:
-                state = torch.tensor(self.__lastFrames.getNext(),
-                                     dtype=torch.float).to(self.__device)
+                state = torch.tensor(self.__lastFrames.getNext(), dtype=torch.float).to(self.__device)
                 state = torch.unsqueeze(state, 0).to(self.__device)
                 prediction = self.__model(state).to(self.__device)
                 self.__lastDirection = torch.argmax(prediction).item()
