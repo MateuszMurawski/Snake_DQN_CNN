@@ -2,7 +2,7 @@ from collections import deque
 from typing import List
 
 
-class Frame:
+class FrameStore:
     def __init__(self, capacity: int) -> None:
         self.__memory: deque = deque(maxlen=capacity)
 
@@ -27,7 +27,3 @@ class Frame:
 
     def getSize(self) -> int:
         return len(self.__memory)
-
-    def clear(self) -> None:
-        self.__memory.clear()
-

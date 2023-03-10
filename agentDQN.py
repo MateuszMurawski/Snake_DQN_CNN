@@ -14,7 +14,7 @@ import cnnDQN
 import cnnDDQN
 import ddqn
 import dqn
-import frame
+import frameStore
 import gameInfo
 import memeory
 
@@ -36,13 +36,13 @@ class AgentDQN(agent.Agent):
 
         self.__lastScore: int = 0
         self.__lastNumberGame: int = 1
-        self.__award: int = 0
+        self.__award: float = 0.0
         self.__lastDirection: int = None
         self.__epsilon: float = 1.0
         self.__counterSkip: int = 0
 
         self.__memory: memeory.Memory = memeory.Memory(memorySize)
-        self.__lastFrames: frame.Frame = frame.Frame(5)
+        self.__lastFrames: frameStore.FrameStore = frameStore.FrameStore(5)
         self.__model: nn.Module = cnnDQN.cnnDQN()
         self.__dqn: dqn.DQN = dqn.DQN(self.__model, self.__learningRate, self.__gamma)
 
@@ -52,8 +52,9 @@ class AgentDQN(agent.Agent):
     def getNewDirection(self, gameInfo: gameInfo.GameInfo) -> int:
         self.__lastFrames.add(self.__compresionPicture(gameInfo.getGameScreenWithoutHUB()))
         self.__counterSkip += 1
+        self.__award = 0.0
 
-        if self.__lastFrames.getSize() > 4:
+        if self.__counterSkip > 4:
             if self.__lastNumberGame < gameInfo.getNumberGame():
                 self.__award = -1.0
                 self.__counterSkip = 0
@@ -65,8 +66,7 @@ class AgentDQN(agent.Agent):
             else:
                 self.__award = -0.1
 
-            if self.__counterSkip > 4:
-                self.__memory.add(self.__lastFrames.getNow(), self.__lastDirection, self.__award, self.__lastFrames.getNext())
+            self.__memory.add(self.__lastFrames.getNow(), self.__lastDirection, self.__award, self.__lastFrames.getNext())
 
         if gameInfo.getNumberGame() % 1000 == 0 and self.__award == -1.0:
             print("Epsilon: ", self.__epsilon)
@@ -78,13 +78,13 @@ class AgentDQN(agent.Agent):
         if gameInfo.getNumberAllStep() < self.__stepWithoutLearn:
             self.__lastDirection = random.randint(0, 3)
             return self.__lastDirection
+
         else:
-            if self.__counterSkip > 4:
+            if self.__award != 0.0:
                 self.__trainOneStep(self.__lastFrames.getNow(), self.__lastDirection, self.__award, self.__lastFrames.getNext())
 
             if self.__award == -1.0:
                 self.__trainBatch(self.__batchSize)
-                self.__award = 0.0
 
             self.__epsilon -= self.__epsilonReduction
             p = random.randint(0, 10000) / 10000.0
@@ -92,19 +92,21 @@ class AgentDQN(agent.Agent):
             if p > self.__epsilon and self.__lastFrames.getSize() > 4:
                 state = torch.tensor(self.__lastFrames.getNext(), dtype=torch.float).to(self.__device)
                 state = torch.unsqueeze(state, 0).to(self.__device)
+
                 prediction = self.__model(state).to(self.__device)
                 self.__lastDirection = torch.argmax(prediction).item()
+
                 return self.__lastDirection
+
             else:
                 self.__lastDirection = random.randint(0, 3)
                 return self.__lastDirection
 
     def __compresionPicture(self, screen: numpy.ndarray) -> List:
-        cvImage = cv2.cvtColor(screen, cv2.COLOR_BGR2GRAY)
+        cvImage = cv2.cvtColor(screen, cv2.COLOR_BGR2RGB)
         resized = cv2.resize(cvImage, (self.__sizeResize, self.__sizeResize), interpolation=cv2.INTER_NEAREST)
-        ret, binImg = cv2.threshold(resized, 1, 1, cv2.THRESH_BINARY)
 
-        return binImg.transpose().tolist()
+        return (resized.transpose()[2] / 255).tolist()
 
     def __trainBatch(self, batchSize: int) -> None:
         samples = self.__memory.getSamples(batchSize)
