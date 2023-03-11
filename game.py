@@ -1,3 +1,4 @@
+import os
 import random
 import time
 from typing import List, Optional
@@ -9,7 +10,10 @@ import plot
 
 
 class Game:
-    def __init__(self, __agent: agent.Agent, maxNumberGame: int) -> None:
+    def __init__(self, __agent: agent.Agent, maxNumberGame: int, showGame: Optional[bool] = True) -> None:
+        if not showGame:
+            os.environ['SDL_VIDEODRIVER'] = 'dummy'
+
         self.__agent: agent.Agent = __agent
         self.__maxNumberGame: int = maxNumberGame
 
@@ -46,7 +50,7 @@ class Game:
 
         pygame.init()
         pygame.display.set_caption('Snake Game')
-        self.__gameWindow: pygame.display = pygame.display.set_mode((self.__windowX, self.__windowY), pygame.HIDDEN)
+        self.__gameWindow: pygame.display = pygame.display.set_mode((self.__windowX, self.__windowY))
         self.__fps: pygame.time.Clock = pygame.time.Clock()
 
     def setSnakeSpeed(self, speed: int) -> None:
@@ -84,12 +88,6 @@ class Game:
         if show:
             plot.Plot.startServerPlot()
             self.__showPlot = True
-
-    def setShowGame(self, show: Optional[bool] = True) -> None:
-        if show:
-            self.__gameWindow: pygame.display = pygame.display.set_mode((self.__windowX, self.__windowY))
-        else:
-            self.__gameWindow: pygame.display = pygame.display.set_mode((self.__windowX, self.__windowY), pygame.HIDDEN)
 
     def __showScore(self, color: pygame.Color, font: str, size: int) -> None:
         scoreFont = pygame.font.SysFont(font, size)
