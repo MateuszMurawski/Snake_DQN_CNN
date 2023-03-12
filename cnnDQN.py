@@ -14,13 +14,18 @@ class cnnDQN(nn.Module):
         self.__conv2 = nn.Conv2d(in_channels=16, out_channels=32, kernel_size=3, stride=2).to(self.__device)
         self.__conv3 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, stride=2).to(self.__device)
 
+        self.__norm1 = nn.BatchNorm2d(16)
+        self.__norm2 = nn.BatchNorm2d(32)
+
         self.__fc1 = nn.Linear(64, 512).to(self.__device)
         self.__fc2 = nn.Linear(512, 512).to(self.__device)
         self.__fc3 = nn.Linear(512, 4).to(self.__device)
 
     def forward(self, x):
         x = F.relu(self.__conv1(x)).to(self.__device)
+        x = self.__norm1(x).to(self.__device)
         x = F.relu(self.__conv2(x)).to(self.__device)
+        x = self.__norm2(x).to(self.__device)
         x = F.relu(self.__conv3(x)).to(self.__device)
         x = torch.flatten(x, 1).to(self.__device)
 
