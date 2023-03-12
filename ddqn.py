@@ -32,14 +32,13 @@ class DDQN:
 
         for idx in range(len(state)):
             Qnew = reward[idx]
-            if reward[idx] != -1.0:
+            if reward[idx] != -1.0 and reward[idx] != 1.0:
                 Qnew = reward[idx] + self.__gamma * nextTarget[idx][maxNextActions[idx]]
             target[idx][action[idx]] = Qnew
 
         self.__optimer.zero_grad()
         loss = self.__criterion(target, predict).to(self.__device)
         loss.backward()
-        nn.utils.clip_grad_norm_(self.__model.parameters(), max_norm=1.0)
         self.__optimer.step()
 
         for targetParam, param in zip(self.__modelTarget.parameters(), self.__model.parameters()):

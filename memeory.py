@@ -16,10 +16,3 @@ class Memory:
         else:
             return random.sample(self.__memory, batchSize)
 
-    def getLastSample(self) -> List:
-        return self.__memory[-1]
-
-    def getSize(self) -> int:
-        return len(self.__memory)
-
-

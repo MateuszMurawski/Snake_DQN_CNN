@@ -10,25 +10,17 @@ class cnnDQN(nn.Module):
 
         self.__device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-        self.__conv1 = nn.Conv2d(in_channels=4, out_channels=32, kernel_size=5, stride=3).to(self.__device)
-        self.__conv2 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, stride=2).to(self.__device)
-        self.__conv3 = nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, stride=2).to(self.__device)
+        self.__conv1 = nn.Conv2d(in_channels=1, out_channels=16, kernel_size=5, stride=1).to(self.__device)
+        self.__conv2 = nn.Conv2d(in_channels=16, out_channels=32, kernel_size=3, stride=2).to(self.__device)
+        self.__conv3 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, stride=2).to(self.__device)
 
-        self.__batchNorm1 = nn.BatchNorm2d(64)
-
-        self.__pool1 = nn.MaxPool2d(kernel_size=2, stride=2)
-        self.__pool2 = nn.MaxPool2d(kernel_size=2, stride=2)
-
-        self.__fc1 = nn.Linear(128, 512).to(self.__device)
+        self.__fc1 = nn.Linear(64, 512).to(self.__device)
         self.__fc2 = nn.Linear(512, 512).to(self.__device)
         self.__fc3 = nn.Linear(512, 4).to(self.__device)
 
     def forward(self, x):
         x = F.relu(self.__conv1(x)).to(self.__device)
-        x = self.__pool1(x).to(self.__device)
         x = F.relu(self.__conv2(x)).to(self.__device)
-        x = self.__pool2(x).to(self.__device)
-        x = self.__batchNorm1(x).to(self.__device)
         x = F.relu(self.__conv3(x)).to(self.__device)
         x = torch.flatten(x, 1).to(self.__device)
 
