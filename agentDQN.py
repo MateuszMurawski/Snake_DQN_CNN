@@ -43,8 +43,8 @@ class AgentDQN(agent.Agent):
 
         self.__memoryGood: memeory.Memory = memeory.Memory(memorySize // 2)
         self.__memoryBad: memeory.Memory = memeory.Memory(memorySize // 2)
-        self.__model: nn.Module = cnnDQN.cnnDQN()
-        self.__dqn: dqn.DQN = dqn.DQN(self.__model, self.__learningRate, self.__gamma)
+        self.__model: nn.Module = cnnDDQN.cnnDDQN()
+        self.__dqn: ddqn.DDQN = ddqn.DDQN(self.__model, self.__learningRate, self.__gamma, self.__tau)
 
         self.__device = 'cuda' if torch.cuda.is_available() else 'cpu'
         print("Device: ", self.__device)

@@ -7,7 +7,7 @@ class DDQN:
     def __init__(self, model: nn.Module, learningRate: Optional[float] = 0.001, gamma: Optional[float] = 0.99, tau: Optional[float] = 0.01) -> None:
         self.__gamma: float = gamma
         self.__model: nn.Module = model
-        self.__modelTarget: nn.Module = model
+        self.__modelTarget: nn.Module = copy.deepcopy(model)
         self.__tau = tau
 
         self.__optimer: optim = optim.Adam(self.__model.parameters(), lr=learningRate)
